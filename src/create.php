@@ -1,11 +1,10 @@
 <?php
-error_reporting(0);
+// error_reporting(0);
 header("Content-Type: application/json; charset=UTF-8");
 require_once 'config.php';
-require_once 'database.php';
-
+require_once 'transactions.class.php';
 $data = null;
-if ($_SERVER['HTTP_CONTENT_TYPE'] == "application/json") { 
+if ($_SERVER['HTTP_CONTENT_TYPE'] == "application/json" || $_SERVER['CONTENT_TYPE'] == "application/json") { 
     $data = json_decode(file_get_contents('php://input'), true);
 } else { 
     $data = $_POST;
@@ -53,27 +52,18 @@ if (!$merchant_id || $merchant_id === '') {
     echo json_encode($return);
     die();
 }
-$nomor_va = "";
-if ($payment_type === $valid_payment_type[0]) { 
-    $nomor_va = random_int(1000000000, 2147483640);
-}
 
-try {
-    $stmt = $mysqli->prepare("INSERT INTO transactions (invoice_id, item_name, amount, payment_type, customer_name, merchant_id) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param(
-        "isissi",
-        $invoice_id,
-        $item_name,
-        $amount,
-        $payment_type,
-        $customer_name,
-        $merchant_id
-    );
-    $stmt->execute();
-    $reference_id = $stmt->insert_id;
-    $return = ['reference_id' => $reference_id, 'number_va' => $nomor_va, 'status' => ucfirst($valid_status[0])];
-    echo json_encode($return);
-} catch (Exception $e) {
-    $return = ['success' => false, 'message' => $e->getMessage()];
-    echo json_encode($return);
+$transaction = new Transaction();
+$transaction->setInvoiceId($invoice_id);
+$transaction->setItemName($item_name);
+$transaction->setAmount($amount);
+$transaction->setPaymentType($payment_type);
+if ($payment_type === 'virtual_account') { 
+    $transaction->setNomorVA();
 }
+$transaction->setCustomerName($customer_name);
+$transaction->setMerchantId($merchant_id);
+$transaction->setStatus($valid_status[0]);
+$result = $transaction->createTransaction();
+echo json_encode($result);
+die;

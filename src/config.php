@@ -1,10 +1,10 @@
 <?php
 
 $database_config = [
-    'host' => 'localhost',
+    'host' => 'db',
     'username' => 'root',
-    'password' => '',
-    'database' => 'detik'
+    'password' => 'test',
+    'database' => 'detik_test'
 ];
 
 $valid_payment_type = [
@@ -16,3 +16,5 @@ $valid_status = [
     'paid',
     'failed'
 ];
+
+$src_folder = '';

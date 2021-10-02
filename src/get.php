@@ -1,18 +1,11 @@
 <?php
-error_reporting(0);
+// error_reporting(0);
 header("Content-Type: application/json; charset=UTF-8");
 require_once 'config.php';
-require_once 'database.php';
+require_once 'transactions.class.php';
 
-$data = null;
-if ($_SERVER['HTTP_CONTENT_TYPE'] == "application/json") { 
-    $data = json_decode(file_get_contents('php://input'), true);
-} else { 
-    $data = $_POST;
-}
-
-$reference_id = $data['reference_id'];
-$merchant_id = $data['merchant_id'];
+$reference_id = $_GET['reference_id'];
+$merchant_id = $_GET['merchant_id'];
 
 if (!$reference_id || $reference_id === '') { 
     $return = ['success' => false, 'message' => 'Reference ID Required!'];
@@ -25,4 +18,7 @@ if (!$merchant_id || $merchant_id === '') {
     die();
 }
 
-//WIP
+$transaction = new Transaction();
+$transaction->setReferenceId($reference_id);
+$transaction->setMerchantId($merchant_id);
+echo json_encode($transaction->getTransaction());
